@@ -14,8 +14,7 @@ steps:
   displayName: 'Run a one-line script'
 
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
+    uname -a
   displayName: 'Run a multi-line script'
 
 # Install dependencies in the agent pool server to make the system ready for build generation process
