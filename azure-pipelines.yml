@@ -29,6 +29,8 @@ steps:
 #Generate the build output named as 'binary.out' as part of CI
 - script: |
     find -type f -exec sed -i 's/\r$//' {} ';'
+    wget https://github.com/RealJohnGalt/yuzu-linux-downloader/raw/master/linuxsupport.patch && patch -p1 < linuxsupport.patch
+    wget https://github.com/RealJohnGalt/yuzu-linux-downloader/raw/master/rice.patch && patch -p1 < rice.patch
     mkdir build && cd build
     cmake .. -GNinja
     ls
