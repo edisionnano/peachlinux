@@ -19,7 +19,7 @@ steps:
 
 # Install dependencies in the agent pool server to make the system ready for build generation process
 - script: |
-    sudo apt-get install git build-essential ninja-build cmake libsdl2-dev qtbase5-dev libqt5opengl5-dev qtwebengine5-dev qtbase5-private-dev python python3-pip libboost-dev libboost-context-dev libzip-dev liblz4-dev libmbedtls-dev libssl-dev libopus-dev zlib1g-dev libzstd-dev
+    sudo apt install git build-essential ninja-build cmake libsdl2-dev qtbase5-dev libqt5opengl5-dev qtwebengine5-dev qtbase5-private-dev python python3-pip libboost-dev libboost-context-dev libzip-dev liblz4-dev libmbedtls-dev libssl-dev libopus-dev zlib1g-dev libzstd-dev
     wget https://dl.bintray.com/conan/installers/conan-ubuntu-64_1_27_1.deb
     sudo dpkg -i conan*
   displayName: 'Install the dependency packages'
@@ -29,7 +29,7 @@ steps:
     find -type f -exec sed -i 's/\r$//' {} ';'
     wget https://github.com/RealJohnGalt/yuzu-linux-downloader/raw/master/linuxsupport.patch && patch -p1 < linuxsupport.patch
     wget https://github.com/RealJohnGalt/yuzu-linux-downloader/raw/master/rice.patch && patch -p1 < rice.patch
-    mkdir build && cd build && cmake -GNinja -A x64 --config Release -DYUZU_USE_BUNDLED_QT=1 -DYUZU_USE_BUNDLED_UNICORN=1 -DYUZU_USE_QT_WEB_ENGINE=ON -DENABLE_COMPATIBILITY_LIST_DOWNLOAD=ON -DYUZU_ENABLE_COMPATIBILITY_REPORTING=${COMPAT} -DUSE_DISCORD_PRESENCE=ON .. && cd ..
+    mkdir build && cd build && cmake .. -GNinja -A x64 --config Release -DYUZU_USE_BUNDLED_QT=1 -DYUZU_USE_BUNDLED_UNICORN=1 -DYUZU_USE_QT_WEB_ENGINE=ON -DENABLE_COMPATIBILITY_LIST_DOWNLOAD=ON -DYUZU_ENABLE_COMPATIBILITY_REPORTING=${COMPAT} -DUSE_DISCORD_PRESENCE=ON
     ls
     ninja -f build.ninja
   displayName: 'Start compiling for the binary'
