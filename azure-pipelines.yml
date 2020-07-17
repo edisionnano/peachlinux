@@ -1,0 +1,34 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+
+# Install dependencies in the agent pool server to make the system ready for build generation process
+- script: |
+    sudo apt-get update
+    sudo apt-get upgrade
+    sudo apt-get install git build-essential ninja-build cmake libsdl2-dev qtbase5-dev libqt5opengl5-dev qtwebengine5-dev qtbase5-private-dev python python3-pip libboost-dev libboost-context-dev libzip-dev liblz4-dev libmbedtls-dev libssl-dev libopus-dev zlib1g-dev libzstd-dev && pip3 install --user conan
+  displayName: 'Install the dependency packages'
+
+#Generate the build output named as 'binary.out' as part of CI
+- script: |
+    find -type f -exec sed -i 's/\r$//' {} ';'
+    mkdir build && cd build
+    cmake .. -GNinja
+    ninja
+  displayName: 'Start compiling for the binary'
