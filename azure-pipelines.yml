@@ -31,5 +31,6 @@ steps:
     find -type f -exec sed -i 's/\r$//' {} ';'
     mkdir build && cd build
     cmake .. -GNinja
-    ninja
+    ls
+    ninja -f build.ninja
   displayName: 'Start compiling for the binary'
