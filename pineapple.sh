@@ -90,9 +90,9 @@ printf '\e[1;32m%-6s\e[m' "Compilation completed, type your password bellow to i
 printf "\n"
 sudo mv ~/.config/pineapple/executable/yuzu /usr/local/bin/yuzu
 cd /usr/share/pixmaps
-sudo curl -s curl https://raw.githubusercontent.com/edisionnano/peachlinux/master/yuzu.svg > yuzu.svg
-sudo cp yuzu.svg /usr/share/icons/hicolor/scalable/yuzu.svg
-sudo curl -s https://pastebin.com/raw/pCLPtz0A > /usr/share/applications/yuzu.desktop
-cp /usr/share/applications/yuzu.desktop $(xdg-user-dir DESKTOP)/yuzu.desktop
+sudo sh -c "curl -s https://raw.githubusercontent.com/edisionnano/peachlinux/master/yuzu.svg > yuzu.svg"
+sudo cp /usr/share/pixmaps/yuzu.svg /usr/share/icons/hicolor/scalable/yuzu.svg
+sudo sh -c "curl -s https://pastebin.com/raw/pCLPtz0A > /usr/share/applications/yuzu.desktop"
+sudo cp /usr/share/applications/yuzu.desktop $(xdg-user-dir DESKTOP)/yuzu.desktop
 printf '\e[1;32m%-6s\e[m' "Installation completed."
 printf "\n"
