@@ -78,7 +78,8 @@ fi
 wget $(cat version.txt | grep -o 'https://cdn-.*.7z')
 7z x Yuzu*
 cd yuzu-windows-msvc-early-access
-tar -xf yuzu-windows-msvc-source-* 
+tar -xf yuzu-windows-msvc-source-*
+rm yuzu-windows-msvc-source-*.tar.xz 
 cd $(ls -d yuzu-windows-msvc-source-*)
 find -type f -exec sed -i 's/\r$//' {} ';'
 mkdir build && cd build
@@ -88,7 +89,7 @@ printf '\e[1;32m%-6s\e[m' "Compilation completed, type your password bellow to i
 printf "\n"
 sudo mv bin/yuzu /usr/local/bin/yuzu
 cd /usr/share/pixmaps
-rm -rf ~/.config/pineapple
+rm -rf ~/.config/pineapple/*
 FILE=/usr/share/applications/yuzu.desktop
 if [[ -f "$FILE" ]]; then
     :
