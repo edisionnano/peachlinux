@@ -65,7 +65,7 @@ elif [ "$option" = "r" ]
 then
 printf "\nUninstalling...\n"
 sudo rm /usr/local/bin/yuzu
-sudo rm /usr/share/icons/hicolor/scalable/yuzu.svg
+sudo rm /usr/share/icons/hicolor/scalable/apps/yuzu.svg
 sudo rm /usr/share/pixmaps/yuzu.svg
 sudo rm /usr/share/applications/yuzu.desktop
 sudo update-desktop-database
@@ -95,7 +95,7 @@ if [[ -f "$FILE" ]]; then
     :
 else
 sudo sh -c "curl -s https://raw.githubusercontent.com/edisionnano/peachlinux/master/yuzu.svg > yuzu.svg"
-sudo cp /usr/share/pixmaps/yuzu.svg /usr/share/icons/hicolor/scalable/yuzu.svg
+sudo cp /usr/share/pixmaps/yuzu.svg /usr/share/icons/hicolor/scalable/apps/yuzu.svg
 sudo sh -c "curl -s https://pastebin.com/raw/pCLPtz0A > /usr/share/applications/yuzu.desktop"
 sudo update-desktop-database
 fi
