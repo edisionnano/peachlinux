@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 mkdir -p ~/.config/pineapple && cd ~/.config/pineapple
 base64 -d <<<"ICAgICAgICAgICAvJCQgICAgICAgICAgIC8kJCQkJCQkJCAgLyQkJCQkJCAgICAgICAgICAgICAg
 ICAgICAgICAvJCQgICAgICAgICAgCiAgICAgICAgICB8X18vICAgICAgICAgIHwgJCRfX19fXy8g
@@ -77,32 +76,27 @@ printf "Exiting...\n"
 exit
 fi
 wget $(cat version.txt | grep -o 'https://cdn-.*.7z')
-mkdir -p executable
-rm -rf executable
-mkdir executable
 7z x Yuzu*
-rm Yuzu*
-rm version.txt
 cd yuzu-windows-msvc-early-access
 tar -xf yuzu-windows-msvc-source-* 
-rm yuzu-windows-msvc-source-*.tar.xz
 cd $(ls -d yuzu-windows-msvc-source-*)
 find -type f -exec sed -i 's/\r$//' {} ';'
 mkdir build && cd build
 cmake .. -GNinja
 ninja
-mv bin/yuzu ~/.config/pineapple/executable/yuzu
-cd ~/.config/pineapple
-rm -rf yuzu-windows-msvc-early-access
-rm YuzuEA*
-rm wget-log
 printf '\e[1;32m%-6s\e[m' "Compilation completed, type your password bellow to install it."
 printf "\n"
-sudo mv ~/.config/pineapple/executable/yuzu /usr/local/bin/yuzu
+sudo mv bin/yuzu /usr/local/bin/yuzu
 cd /usr/share/pixmaps
+rm -rf ~/.config/pineapple
+FILE=/usr/share/applications/yuzu.desktop
+if [[ -f "$FILE" ]]; then
+    :
+else
 sudo sh -c "curl -s https://raw.githubusercontent.com/edisionnano/peachlinux/master/yuzu.svg > yuzu.svg"
 sudo cp /usr/share/pixmaps/yuzu.svg /usr/share/icons/hicolor/scalable/yuzu.svg
 sudo sh -c "curl -s https://pastebin.com/raw/pCLPtz0A > /usr/share/applications/yuzu.desktop"
 sudo update-desktop-database
+fi
 printf '\e[1;32m%-6s\e[m' "Installation completed."
 printf "\n"
