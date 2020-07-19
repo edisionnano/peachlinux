@@ -63,6 +63,7 @@ printf "Choose version number:"
 read version
 curl -s $(grep "YuzuEA-$version" version.txt | grep -o 'https.*7z') > version.txt
 elif [ "$option" = "r" ]
+then
 printf "\nUninstalling...\n"
 sudo rm /usr/local/bin/yuzu
 sudo rm /usr/share/icons/hicolor/scalable/yuzu.svg
