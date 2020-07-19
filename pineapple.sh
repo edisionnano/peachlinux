@@ -50,7 +50,7 @@ fi
 curl -s https://pineappleea.github.io/ | sed -e '0,/^			<!--link-goes-here-->$/d' -e '/div/q;p'| head -n -2 > version.txt
 printf "Latest version is "
 head -n 1 version.txt | grep -o 'EA .*' | tr -d '</a><br>'
-printf "Type y to download it, n to download an older version or anything else to exit:"
+printf "Type y to download it, n to download an older version, r to uninstall or anything else to exit:"
 read option
 if [ "$option" = "y" ]
 then
@@ -62,6 +62,15 @@ uniq version.txt | grep -o 'EA .*' | tr -d '</a><br>'
 printf "Choose version number:"
 read version
 curl -s $(grep "YuzuEA-$version" version.txt | grep -o 'https.*7z') > version.txt
+elif [ "$option" = "r" ]
+printf "\nUninstalling...\n"
+sudo rm /usr/local/bin/yuzu
+sudo rm /usr/share/icons/hicolor/scalable/yuzu.svg
+sudo rm /usr/share/pixmaps/yuzu.svg
+sudo rm /usr/share/applications/yuzu.desktop
+sudo update-desktop-database
+printf "Uninstalled successfully\n"
+exit
 else
 printf "Exiting...\n"
 exit
@@ -93,6 +102,6 @@ cd /usr/share/pixmaps
 sudo sh -c "curl -s https://raw.githubusercontent.com/edisionnano/peachlinux/master/yuzu.svg > yuzu.svg"
 sudo cp /usr/share/pixmaps/yuzu.svg /usr/share/icons/hicolor/scalable/yuzu.svg
 sudo sh -c "curl -s https://pastebin.com/raw/pCLPtz0A > /usr/share/applications/yuzu.desktop"
-sudo cp /usr/share/applications/yuzu.desktop $(xdg-user-dir DESKTOP)/yuzu.desktop
+sudo update-desktop-database
 printf '\e[1;32m%-6s\e[m' "Installation completed."
 printf "\n"
