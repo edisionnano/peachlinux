@@ -27,8 +27,7 @@ steps:
 #Generate the build output named as 'binary.out' as part of CI
 - script: |
     find -type f -exec sed -i 's/\r$//' {} ';'
-    wget https://github.com/RealJohnGalt/yuzu-linux-downloader/raw/master/linuxsupport.patch && patch -p1 < linuxsupport.patch
     mkdir build && cd build
-    cmake ..
-    cmake --build .
+    cmake .. -GNinja
+    ninja
   displayName: 'Start compiling for the binary'
