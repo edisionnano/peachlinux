@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-20.04'
+  vmImage: 'ubuntu-18.04'
 
 steps:
 - script: echo Hello, world!
@@ -29,5 +29,5 @@ steps:
     find -type f -exec sed -i 's/\r$//' {} ';'
     mkdir build && cd build
     cmake .. -GNinja
-    ninja
+    cmake --build build
   displayName: 'Start compiling for the binary'
