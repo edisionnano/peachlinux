@@ -21,8 +21,7 @@ steps:
 - script: |
     sudo apt update
     sudo apt install git build-essential ninja-build cmake libsdl2-dev qtbase5-dev libqt5opengl5-dev qtwebengine5-dev qtbase5-private-dev python python3-pip libboost-dev libboost-context-dev libzip-dev liblz4-dev libmbedtls-dev libssl-dev libopus-dev zlib1g-dev libzstd-dev
-    wget https://dl.bintray.com/conan/installers/conan-ubuntu-64_1_27_1.deb
-    sudo dpkg -i conan*
+    pip3 install --user conan
   displayName: 'Install the dependency packages'
 
 #Generate the build output named as 'binary.out' as part of CI
