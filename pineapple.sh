@@ -18,50 +18,22 @@ ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfF9fLyAgICAgIHxfXy8gICAgICAg
 ICAgICAgICAgIA=="
 printf "\n"
 printf "on pizza\n"
-printf "Choose linux distro family:\n"
-printf '\e[1;36m%-6s\e[m' "[1]Arch"
-printf "\n"
-printf '\e[1;31m%-6s\e[m' "[2]Debian"
-printf "\n"
-printf '\e[1;34m%-6s\e[m' "[3]Fedora"
-printf "\n"
-printf '\e[1;35m%-6s\e[m' "[4]Gentoo"
-printf "\n"
-printf "Or anything else to skip installing the dependencies\n"
-printf "[1-4]:"
-read distro
-if [ "$distro" = "1" ];
-then
-sudo pacman -S --needed p7zip git base-devel ninja cmake sdl2 qt5 python2 python-pip boost catch2 fmt libzip lz4 mbedtls nlohmann-json openssl opus zlib zstd && yay -S conan
-elif  [ "$distro" = "2" ];
-then
-sudo apt-get install p7zip git build-essential ninja-build cmake libsdl2-dev qtbase5-dev libqt5opengl5-dev qtwebengine5-dev qtbase5-private-dev python python3-pip libboost-dev libboost-context-dev libzip-dev liblz4-dev libmbedtls-dev libssl-dev libopus-dev zlib1g-dev libzstd-dev
-wget https://dl.bintray.com/conan/installers/conan-ubuntu-64_1_27_1.deb
-sudo dpkg -i conan*
-rm conan*
-elif [ "$distro" = "3" ];
-then
-sudo dnf install p7zip git gcc ninja-build cmake SDL2-devel qt5-qtbase-devel python2 python-pip boost-devel fmt-devel libzip-devel libzstd-devel lz4-devel mbedtls-devel openssl-devel opus-devel zlib-devel && pip install --user conan
-elif [ "$distro" = "4" ];
-then
-emerge dev-vcs/git =sys-devel/gcc-7.1.0 dev-util/ninja dev-util/cmake media-libs/libsdl2 dev-qt/qtcore dev-qt/qtopengl dev-util/conan app-arch/p7zip
-fi
 curl -s https://pineappleea.github.io/ | sed -e '0,/^			<!--link-goes-here-->$/d' -e '/div/q;p'| head -n -2 > version.txt
 printf "Latest version is "
 head -n 1 version.txt | grep -o 'EA .*' | tr -d '</a><br>'
-printf "Type y to download it, n to download an older version, r to uninstall or anything else to exit:"
+printf " [1] Download it \n [2] Download an older version \n [3] Uninstall \nor anything else to exit.\nOption:"
 read option
-if [ "$option" = "y" ]
+if [ "$option" = "1" ]
 then
 curl -s $(head -n 1 version.txt | grep -o 'https.*7z') > version.txt
-elif [ "$option" = "n" ]
+elif [ "$option" = "2" ]
 then
 printf "Available versions:\n"
 uniq version.txt | grep -o 'EA .*' | tr -d '</a><br>'
 printf "Choose version number:"
 read version
 curl -s $(grep "YuzuEA-$version" version.txt | grep -o 'https.*7z') > version.txt
-elif [ "$option" = "r" ]
+elif [ "$option" = "3" ]
 then
 printf "\nUninstalling...\n"
 sudo rm /usr/local/bin/yuzu
@@ -85,7 +57,20 @@ find -type f -exec sed -i 's/\r$//' {} ';'
 mkdir build && cd build
 cmake .. -GNinja
 ninja
-printf '\e[1;32m%-6s\e[m' "Compilation completed, type your password bellow to install it."
+printf '\e[1;32m%-6s\e[m' "Compilation completed, do you wish to install it[y/n]?:"
+read install
+if [ "$option" = "n" ]
+then
+mkdir -p ~/earlyaccess
+mv bin/yuzu ~/earlyaccess/yuzu
+cd ~/earlyaccess/yuzu
+rm -rf ~/.config/pineapple/*
+printf '\e[1;32m%-6s\e[m' "The binary sits at ~/earlyaccess/yuzu."
+printf "\n"
+exit
+else
+    :
+fi
 printf "\n"
 sudo mv bin/yuzu /usr/local/bin/yuzu
 cd /usr/share/pixmaps
