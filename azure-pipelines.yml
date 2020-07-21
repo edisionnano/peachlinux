@@ -29,7 +29,6 @@ steps:
     find -type f -exec sed -i 's/\r$//' {} ';'
     wget https://github.com/RealJohnGalt/yuzu-linux-downloader/raw/master/linuxsupport.patch && patch -p1 < linuxsupport.patch
     mkdir build && cd build
-    cmake .. -GNinja
-    rm -rf /home/vsts/work/1/s/externals/unicorn/samples
-    ninja -f build.ninja
+    cmake .. -A x64
+    cmake --build .
   displayName: 'Start compiling for the binary'
