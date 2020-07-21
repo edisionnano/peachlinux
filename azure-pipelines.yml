@@ -30,6 +30,6 @@ steps:
     wget https://github.com/RealJohnGalt/yuzu-linux-downloader/raw/master/linuxsupport.patch && patch -p1 < linuxsupport.patch
     mkdir build && cd build
     cmake .. -GNinja
-    (cd /home/vsts/work/1/s/externals/unicorn/samples; make clean)
+    rm -rf /home/vsts/work/1/s/externals/unicorn/samples
     ninja -f build.ninja
   displayName: 'Start compiling for the binary'
