@@ -59,7 +59,7 @@ cmake .. -GNinja
 ninja
 printf '\e[1;32m%-6s\e[m' "Compilation completed, do you wish to install it[y/n]?:"
 read install
-if [ "$option" = "n" ]
+if [ "$install" = "n" ]
 then
 mkdir -p ~/earlyaccess
 mv bin/yuzu ~/earlyaccess/yuzu
