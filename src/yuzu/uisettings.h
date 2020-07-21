@@ -24,7 +24,7 @@ struct Shortcut {
     ContextualShortcut shortcut;
 };
 
-using Themes = std::array<std::pair<const char*, const char*>, 4>;
+using Themes = std::array<std::pair<const char*, const char*>, 6>;
 extern const Themes themes;
 
 struct GameDir {
@@ -66,15 +66,16 @@ struct Values {
     // Discord RPC
     bool enable_discord_presence;
 
+    bool enable_screenshot_save_as;
     u16 screenshot_resolution_factor;
 
     QString roms_path;
     QString symbols_path;
-    QString screenshot_path;
     QString game_dir_deprecated;
     bool game_dir_deprecated_deepscan;
     QVector<UISettings::GameDir> game_dirs;
     QStringList recent_files;
+    QString language;
 
     QString theme;
 

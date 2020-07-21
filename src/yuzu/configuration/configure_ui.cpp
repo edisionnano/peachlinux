@@ -4,8 +4,11 @@
 
 #include <array>
 #include <utility>
+#include <QFileDialog>
 
+#include <QDirIterator>
 #include "common/common_types.h"
+#include "common/file_util.h"
 #include "core/settings.h"
 #include "ui_configure_ui.h"
 #include "yuzu/configuration/configure_ui.h"
@@ -28,6 +31,8 @@ constexpr std::array row_text_names{
 
 ConfigureUi::ConfigureUi(QWidget* parent) : QWidget(parent), ui(new Ui::ConfigureUi) {
     ui->setupUi(this);
+
+    InitializeLanguageComboBox();
 
     for (const auto& theme : UISettings::themes) {
         ui->theme_combobox->addItem(QString::fromUtf8(theme.first),
@@ -52,6 +57,18 @@ ConfigureUi::ConfigureUi(QWidget* parent) : QWidget(parent), ui(new Ui::Configur
             [=]() { ConfigureUi::UpdateSecondRowComboBox(); });
     connect(ui->row_2_text_combobox, QOverload<int>::of(&QComboBox::activated),
             [=]() { ConfigureUi::UpdateFirstRowComboBox(); });
+
+    // Set screenshot path to user specification.
+    connect(ui->screenshot_path_button, &QToolButton::pressed, this, [this] {
+        const QString& filename =
+            QFileDialog::getExistingDirectory(
+                this, tr("Select Screenshots Path..."),
+                QString::fromStdString(FileUtil::GetUserPath(FileUtil::UserPath::ScreenshotsDir))) +
+            QDir::separator();
+        if (!filename.isEmpty()) {
+            ui->screenshot_path_edit->setText(filename);
+        }
+    });
 }
 
 ConfigureUi::~ConfigureUi() = default;
@@ -63,6 +80,10 @@ void ConfigureUi::ApplyConfiguration() {
     UISettings::values.icon_size = ui->icon_size_combobox->currentData().toUInt();
     UISettings::values.row_1_text_id = ui->row_1_text_combobox->currentData().toUInt();
     UISettings::values.row_2_text_id = ui->row_2_text_combobox->currentData().toUInt();
+
+    UISettings::values.enable_screenshot_save_as = ui->enable_screenshot_save_as->isChecked();
+    FileUtil::GetUserPath(FileUtil::UserPath::ScreenshotsDir,
+                          ui->screenshot_path_edit->text().toStdString());
     Settings::Apply();
 }
 
@@ -72,9 +93,15 @@ void ConfigureUi::RequestGameListUpdate() {
 
 void ConfigureUi::SetConfiguration() {
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
+    ui->language_combobox->setCurrentIndex(
+        ui->language_combobox->findData(UISettings::values.language));
     ui->show_add_ons->setChecked(UISettings::values.show_add_ons);
     ui->icon_size_combobox->setCurrentIndex(
         ui->icon_size_combobox->findData(UISettings::values.icon_size));
+
+    ui->enable_screenshot_save_as->setChecked(UISettings::values.enable_screenshot_save_as);
+    ui->screenshot_path_edit->setText(
+        QString::fromStdString(FileUtil::GetUserPath(FileUtil::UserPath::ScreenshotsDir)));
 }
 
 void ConfigureUi::changeEvent(QEvent* event) {
@@ -98,6 +125,25 @@ void ConfigureUi::RetranslateUI() {
         ui->row_1_text_combobox->setItemText(i, name);
         ui->row_2_text_combobox->setItemText(i, name);
     }
+}
+
+void ConfigureUi::InitializeLanguageComboBox() {
+    ui->language_combobox->addItem(tr("<System>"), QString{});
+    ui->language_combobox->addItem(tr("English"), QStringLiteral("en"));
+    QDirIterator it(QStringLiteral(":/languages"), QDirIterator::NoIteratorFlags);
+    while (it.hasNext()) {
+        QString locale = it.next();
+        locale.truncate(locale.lastIndexOf(QLatin1Char{'.'}));
+        locale.remove(0, locale.lastIndexOf(QLatin1Char{'/'}) + 1);
+        const QString lang = QLocale::languageToString(QLocale(locale).language());
+        ui->language_combobox->addItem(lang, locale);
+    }
+
+    // Unlike other configuration changes, interface language changes need to be reflected on the
+    // interface immediately. This is done by passing a signal to the main window, and then
+    // retranslating when passing back.
+    connect(ui->language_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            &ConfigureUi::OnLanguageChanged);
 }
 
 void ConfigureUi::InitializeIconSizeComboBox() {
@@ -146,4 +192,11 @@ void ConfigureUi::UpdateSecondRowComboBox(bool init) {
 
     ui->row_2_text_combobox->removeItem(
         ui->row_2_text_combobox->findData(ui->row_1_text_combobox->currentData()));
+}
+
+void ConfigureUi::OnLanguageChanged(int index) {
+    if (index == -1)
+        return;
+
+    emit LanguageChanged(ui->language_combobox->itemData(index).toString());
 }

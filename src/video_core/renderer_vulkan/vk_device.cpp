@@ -38,9 +38,6 @@ constexpr std::array Depth16UnormS8_UINT{
 
 constexpr std::array REQUIRED_EXTENSIONS{
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-    VK_KHR_MAINTENANCE1_EXTENSION_NAME,
-    VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME,
-    VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
     VK_KHR_16BIT_STORAGE_EXTENSION_NAME,
     VK_KHR_8BIT_STORAGE_EXTENSION_NAME,
     VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
@@ -87,14 +84,19 @@ std::unordered_map<VkFormat, VkFormatProperties> GetFormatProperties(
         VK_FORMAT_A8B8G8R8_UNORM_PACK32,
         VK_FORMAT_A8B8G8R8_UINT_PACK32,
         VK_FORMAT_A8B8G8R8_SNORM_PACK32,
+        VK_FORMAT_A8B8G8R8_SINT_PACK32,
         VK_FORMAT_A8B8G8R8_SRGB_PACK32,
         VK_FORMAT_B5G6R5_UNORM_PACK16,
         VK_FORMAT_A2B10G10R10_UNORM_PACK32,
+        VK_FORMAT_A2B10G10R10_UINT_PACK32,
         VK_FORMAT_A1R5G5B5_UNORM_PACK16,
         VK_FORMAT_R32G32B32A32_SFLOAT,
+        VK_FORMAT_R32G32B32A32_SINT,
         VK_FORMAT_R32G32B32A32_UINT,
         VK_FORMAT_R32G32_SFLOAT,
+        VK_FORMAT_R32G32_SINT,
         VK_FORMAT_R32G32_UINT,
+        VK_FORMAT_R16G16B16A16_SINT,
         VK_FORMAT_R16G16B16A16_UINT,
         VK_FORMAT_R16G16B16A16_SNORM,
         VK_FORMAT_R16G16B16A16_UNORM,
@@ -106,8 +108,11 @@ std::unordered_map<VkFormat, VkFormatProperties> GetFormatProperties(
         VK_FORMAT_R8G8B8A8_SRGB,
         VK_FORMAT_R8G8_UNORM,
         VK_FORMAT_R8G8_SNORM,
+        VK_FORMAT_R8G8_SINT,
         VK_FORMAT_R8G8_UINT,
         VK_FORMAT_R8_UNORM,
+        VK_FORMAT_R8_SNORM,
+        VK_FORMAT_R8_SINT,
         VK_FORMAT_R8_UINT,
         VK_FORMAT_B10G11R11_UFLOAT_PACK32,
         VK_FORMAT_R32_SFLOAT,
@@ -127,6 +132,7 @@ std::unordered_map<VkFormat, VkFormatProperties> GetFormatProperties(
         VK_FORMAT_BC2_UNORM_BLOCK,
         VK_FORMAT_BC3_UNORM_BLOCK,
         VK_FORMAT_BC4_UNORM_BLOCK,
+        VK_FORMAT_BC4_SNORM_BLOCK,
         VK_FORMAT_BC5_UNORM_BLOCK,
         VK_FORMAT_BC5_SNORM_BLOCK,
         VK_FORMAT_BC7_UNORM_BLOCK,
@@ -165,10 +171,10 @@ std::unordered_map<VkFormat, VkFormatProperties> GetFormatProperties(
 
 } // Anonymous namespace
 
-VKDevice::VKDevice(VkInstance instance_, u32 instance_version_, vk::PhysicalDevice physical_,
-                   VkSurfaceKHR surface, const vk::InstanceDispatch& dld_)
-    : dld{dld_}, physical{physical_}, properties{physical.GetProperties()},
-      instance_version{instance_version_}, format_properties{GetFormatProperties(physical, dld)} {
+VKDevice::VKDevice(VkInstance instance, vk::PhysicalDevice physical, VkSurfaceKHR surface,
+                   const vk::InstanceDispatch& dld)
+    : dld{dld}, physical{physical}, properties{physical.GetProperties()},
+      format_properties{GetFormatProperties(physical, dld)} {
     SetupFamilies(surface);
     SetupFeatures();
 }
@@ -557,6 +563,20 @@ bool VKDevice::IsSuitable(vk::PhysicalDevice physical, VkSurfaceKHR surface) {
 
 std::vector<const char*> VKDevice::LoadExtensions() {
     std::vector<const char*> extensions;
+    const auto Test = [&](const VkExtensionProperties& extension,
+                          std::optional<std::reference_wrapper<bool>> status, const char* name,
+                          bool push) {
+        if (extension.extensionName != std::string_view(name)) {
+            return;
+        }
+        if (push) {
+            extensions.push_back(name);
+        }
+        if (status) {
+            status->get() = true;
+        }
+    };
+
     extensions.reserve(7 + REQUIRED_EXTENSIONS.size());
     extensions.insert(extensions.begin(), REQUIRED_EXTENSIONS.begin(), REQUIRED_EXTENSIONS.end());
 
@@ -565,36 +585,28 @@ std::vector<const char*> VKDevice::LoadExtensions() {
     bool has_ext_transform_feedback{};
     bool has_ext_custom_border_color{};
     bool has_ext_extended_dynamic_state{};
-    for (const VkExtensionProperties& extension : physical.EnumerateDeviceExtensionProperties()) {
-        const auto test = [&](std::optional<std::reference_wrapper<bool>> status, const char* name,
-                              bool push) {
-            if (extension.extensionName != std::string_view(name)) {
-                return;
-            }
-            if (push) {
-                extensions.push_back(name);
-            }
-            if (status) {
-                status->get() = true;
-            }
-        };
-        test(nv_viewport_swizzle, VK_NV_VIEWPORT_SWIZZLE_EXTENSION_NAME, true);
-        test(khr_uniform_buffer_standard_layout,
+    for (const auto& extension : physical.EnumerateDeviceExtensionProperties()) {
+        Test(extension, nv_viewport_swizzle, VK_NV_VIEWPORT_SWIZZLE_EXTENSION_NAME, true);
+        Test(extension, khr_uniform_buffer_standard_layout,
              VK_KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_EXTENSION_NAME, true);
-        test(has_khr_shader_float16_int8, VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME, false);
-        test(ext_depth_range_unrestricted, VK_EXT_DEPTH_RANGE_UNRESTRICTED_EXTENSION_NAME, true);
-        test(ext_index_type_uint8, VK_EXT_INDEX_TYPE_UINT8_EXTENSION_NAME, true);
-        test(ext_shader_viewport_index_layer, VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
-             true);
-        test(has_ext_transform_feedback, VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME, false);
-        test(has_ext_custom_border_color, VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME, false);
-        test(has_ext_extended_dynamic_state, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME, false);
-        if (instance_version >= VK_API_VERSION_1_1) {
-            test(has_ext_subgroup_size_control, VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
-        }
+        Test(extension, has_khr_shader_float16_int8, VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
+             false);
+        Test(extension, ext_depth_range_unrestricted,
+             VK_EXT_DEPTH_RANGE_UNRESTRICTED_EXTENSION_NAME, true);
+        Test(extension, ext_index_type_uint8, VK_EXT_INDEX_TYPE_UINT8_EXTENSION_NAME, true);
+        Test(extension, ext_shader_viewport_index_layer,
+             VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME, true);
+        Test(extension, has_ext_subgroup_size_control, VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME,
+             false);
+        Test(extension, has_ext_transform_feedback, VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME,
+             false);
+        Test(extension, has_ext_custom_border_color, VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME,
+             false);
+        Test(extension, has_ext_extended_dynamic_state,
+             VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME, false);
         if (Settings::values.renderer_debug) {
-            test(nv_device_diagnostics_config, VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME,
-                 true);
+            Test(extension, nv_device_diagnostics_config,
+                 VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME, true);
         }
     }
 
@@ -754,14 +766,14 @@ std::vector<VkDeviceQueueCreateInfo> VKDevice::GetDeviceQueueCreateInfos() const
     queue_cis.reserve(unique_queue_families.size());
 
     for (const u32 queue_family : unique_queue_families) {
-        queue_cis.push_back({
+        auto& ci = queue_cis.emplace_back(VkDeviceQueueCreateInfo{
             .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
             .queueFamilyIndex = queue_family,
-            .queueCount = 1,
-            .pQueuePriorities = &QUEUE_PRIORITY,
         });
+        ci.queueCount = 1;
+        ci.pQueuePriorities = &QUEUE_PRIORITY;
     }
 
     return queue_cis;
