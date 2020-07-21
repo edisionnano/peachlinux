@@ -31,5 +31,5 @@ steps:
     mkdir build && cd build
     cmake .. -GNinja
     (cd /home/vsts/work/1/s/externals/unicorn/samples; make clean)
-    ninja
+    ninja -f build.ninja
   displayName: 'Start compiling for the binary'
