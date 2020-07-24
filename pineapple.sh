@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-mkdir -p ~/.config/pineapple && cd ~/.config/pineapple
+rm -rf /tmp/pineapple
+mkdir -p /tmp/pineapple && cd /tmp/pineapple
 base64 -d <<<"ICAgICAgICAgICAvJCQgICAgICAgICAgIC8kJCQkJCQkJCAgLyQkJCQkJCAgICAgICAgICAgICAg
 ICAgICAgICAvJCQgICAgICAgICAgCiAgICAgICAgICB8X18vICAgICAgICAgIHwgJCRfX19fXy8g
 LyQkX18gICQkICAgICAgICAgICAgICAgICAgICB8ICQkICAgICAgICAgIAogIC8kJCQkJCQgIC8k
@@ -29,7 +30,7 @@ curl -s $(head -n 1 version.txt | grep -o 'https.*7z') > version.txt
 elif [ "$option" = "2" ]
 then
 printf "Available versions:\n"
-uniq version.txt | grep -o 'EA .*' | tr -d '</a><br>'
+uniq version.txt | grep -o 'EA .*' | tr -d '</a><br>' | sed -e ':a;N;$!ba;s/\n/,/g' -e 's/\EA //g'
 printf "Choose version number:"
 read version
 curl -s $(grep "YuzuEA-$version" version.txt | grep -o 'https.*7z') > version.txt
@@ -47,14 +48,14 @@ else
 printf "Exiting...\n"
 exit
 fi
-wget $(cat version.txt | grep -o 'https://cdn-.*.7z')
+wget $(cat version.txt | grep -o 'https://cdn-.*.7z' | head -n 1)
 7z x Yuzu*
 cd yuzu-windows-msvc-early-access
 tar -xf yuzu-windows-msvc-source-*
 rm yuzu-windows-msvc-source-*.tar.xz 
 cd $(ls -d yuzu-windows-msvc-source-*)
 find -type f -exec sed -i 's/\r$//' {} ';'
-mkdir build && cd build
+mkdir -p build && cd build
 cmake .. -GNinja
 ninja
 printf '\e[1;32m%-6s\e[m' "Compilation completed, do you wish to install it[y/n]?:"
@@ -64,7 +65,7 @@ then
 mkdir -p ~/earlyaccess
 mv bin/yuzu ~/earlyaccess/yuzu
 cd ~/earlyaccess/yuzu
-rm -rf ~/.config/pineapple/*
+rm -rf /tmp/pineapple/*
 printf '\e[1;32m%-6s\e[m' "The binary sits at ~/earlyaccess/yuzu."
 printf "\n"
 exit
@@ -74,7 +75,7 @@ fi
 printf "\n"
 sudo mv bin/yuzu /usr/local/bin/yuzu
 cd /usr/share/pixmaps
-rm -rf ~/.config/pineapple/*
+rm -rf /tmp/pineapple/*
 FILE=/usr/share/applications/yuzu.desktop
 if [[ -f "$FILE" ]]; then
     :
@@ -84,5 +85,5 @@ sudo cp /usr/share/pixmaps/yuzu.svg /usr/share/icons/hicolor/scalable/apps/yuzu.
 sudo sh -c "curl -s https://pastebin.com/raw/pCLPtz0A > /usr/share/applications/yuzu.desktop"
 sudo update-desktop-database
 fi
-printf '\e[1;32m%-6s\e[m' "Installation completed."
+printf '\e[1;32m%-6s\e[m' "Installation completed. Use the command yuzu or run it from your launcher."
 printf "\n"
